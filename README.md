@@ -7,6 +7,8 @@
 
 A complete backend API for DAANSETU with automated CI/CD pipeline, infrastructure as code, and one-click deployment.
 
+> **📘 New to the project?** Check out our [Quick Start Guide](./QUICKSTART.md) for step-by-step setup instructions with verification.
+
 ## 🎯 Features
 
 ### ✅ **Complete Backend API**
