@@ -85,7 +85,6 @@ jobs:
           image-ref: ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:latest
           format: 'table'
           severity: 'CRITICAL,HIGH'
-        continue-on-error: true
 
 
   # Deploy to Production
