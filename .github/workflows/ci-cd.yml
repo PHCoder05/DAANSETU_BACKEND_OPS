@@ -50,8 +50,9 @@ jobs:
           echo "  - EC2_HOST: ${{ secrets.EC2_HOST != '' && '✅ Set' || '❌ Missing' }}"
           echo "  - SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY != '' && '✅ Set' || '❌ Missing' }}"
           echo ""
-          echo "💡 To enable full CI/CD pipeline, add these secrets in:"
-          echo "   Repository Settings > Secrets and variables > Actions"
+          echo "💡 AWS Deployment is disabled in GitHub Actions."
+          echo "   Use local deployment instead: .\scripts\deploy-app.ps1"
+          echo "   Your EC2 instance: 54.209.219.220"
 
   # Build Docker Image
   build:
@@ -107,7 +108,7 @@ jobs:
     name: 🚀 Deploy to AWS
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main' && secrets.AWS_ACCESS_KEY_ID != ''
+    if: false  # Disabled - use local deployment instead
     
     steps:
       - name: 📥 Checkout code
