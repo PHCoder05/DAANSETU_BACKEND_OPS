@@ -47,7 +47,8 @@ JWT_REFRESH_SECRET=1db9aefc2f697b1c651be41344ee2d04820fa85b84f1d3f87d84be007e8a4
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 ADMIN_SETUP_KEY=0e5a3b3af7298afe816b72196376c355
-CORS_ORIGIN=*
+# Set CORS_ORIGIN to a comma-separated list of trusted domains (do not use '*')
+CORS_ORIGIN=https://your-frontend-domain.com
 "@
 
 $EnvContent | Out-File -FilePath "$DeployDir\.env" -Encoding UTF8
