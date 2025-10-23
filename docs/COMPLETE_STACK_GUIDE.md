@@ -122,6 +122,11 @@ http://your-domain.com → Nginx → Node.js App (Port 5000)
    - AWS Access Key: `[your access key]`
    - AWS Secret: `[your secret key]`
 
+> ⚠️ **Security Warning:**  
+> Storing AWS access keys and secret keys in Jenkins credentials can pose a security risk if those credentials are leaked or misused.  
+> **Whenever possible, use [IAM roles for EC2 instances](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html) to grant Jenkins the necessary AWS permissions.**  
+> IAM roles provide temporary credentials and are the recommended, more secure approach for AWS authentication.  
+> Only use static access keys if IAM roles are not available, and always follow AWS best practices for credential management.
 #### **Create Pipeline:**
 1. **New Item** → **Pipeline**
 2. **Pipeline script from SCM**

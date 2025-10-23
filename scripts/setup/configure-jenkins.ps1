@@ -70,7 +70,7 @@ Write-Host "   - Access Key: [your access key]" -ForegroundColor Gray
 Write-Host "   - Secret Key: [your secret key]" -ForegroundColor Gray
 Write-Host ""
 Write-Host "6. 🔐 Add other credentials:" -ForegroundColor White
-Write-Host "   - mongodb-uri: mongodb+srv://root:root@cluster0.rxcp0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" -ForegroundColor Gray
+Write-Host "   - mongodb-uri: mongodb+srv://[username]:[password]@[cluster].mongodb.net/?retryWrites=true&w=majority&appName=Cluster0" -ForegroundColor Gray
 Write-Host "   - jwt-secret: 7fa4999230ab91a0051f3f84eb271e97f63427a8f90540b7a38c3549edfd62ed" -ForegroundColor Gray
 Write-Host "   - jwt-refresh-secret: 1db9aefc2f697b1c651be41344ee2d04820fa85b84f1d3f87d84be007e8a433e" -ForegroundColor Gray
 Write-Host "   - admin-setup-key: 0e5a3b3af7298afe816b72196376c355" -ForegroundColor Gray
