@@ -50,8 +50,8 @@ jobs:
           echo "  - EC2_HOST: ${{ secrets.EC2_HOST != '' && '✅ Set' || '❌ Missing' }}"
           echo "  - SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY != '' && '✅ Set' || '❌ Missing' }}"
           echo ""
-          echo "💡 AWS Deployment is disabled in GitHub Actions."
-          echo "   Use local deployment instead: .\scripts\deploy-app.ps1"
+          echo "💡 AWS Deployment is ENABLED in GitHub Actions!"
+          echo "   Will deploy automatically on push to main branch"
           echo "   Your EC2 instance: 54.209.219.220"
 
   # Build Docker Image
@@ -108,7 +108,7 @@ jobs:
     name: 🚀 Deploy to AWS
     runs-on: ubuntu-latest
     needs: build
-    if: false  # Disabled - use local deployment instead
+    if: github.ref == 'refs/heads/main'
     
     steps:
       - name: 📥 Checkout code
