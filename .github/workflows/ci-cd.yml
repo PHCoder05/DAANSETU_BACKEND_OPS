@@ -87,6 +87,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
         continue-on-error: true
 
+
   # Deploy to Production
   deploy:
     name: 🚀 Deploy to AWS
