@@ -392,4 +392,4 @@ Write-ColorOutput "  2. Configure monitoring and alerts" $White
 Write-ColorOutput "  3. Set up SSL certificate (optional)" $White
 Write-ColorOutput "  4. Configure domain name (optional)" $White
 
-Write-ColorOutput "🎉 One-click deployment completed successfully!" $Green
+Write-ColorOutput "One-click deployment completed successfully!" $Green
