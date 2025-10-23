@@ -1,6 +1,6 @@
 # Simple EC2 Deployment Script
 param(
-    [string]$EC2IP = "54.209.219.220",
+    [Parameter(Mandatory=$true)][string]$EC2IP,
     [string]$SSHKey = "~/.ssh/id_rsa"
 )
 
