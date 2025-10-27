@@ -7,6 +7,8 @@
 
 A complete backend API for DAANSETU with automated CI/CD pipeline, infrastructure as code, and one-click deployment.
 
+> **📘 New to the project?** Check out our [Quick Start Guide](./QUICKSTART.md) for step-by-step setup instructions with verification.
+
 ## 🎯 Features
 
 ### ✅ **Complete Backend API**
@@ -36,6 +38,26 @@ A complete backend API for DAANSETU with automated CI/CD pipeline, infrastructur
 - Rollback capabilities
 
 ## 🚀 Quick Start
+
+### **Option 0: Verify Setup (Recommended First Step)**
+
+Before running the application, verify your setup:
+
+```bash
+# Run verification script
+npm run verify
+
+# Or run tests (includes verification)
+npm test
+```
+
+This will check:
+- ✅ Node.js version (18.x or higher)
+- ✅ All required dependencies are installed
+- ✅ Required directories exist (config, routes, etc.)
+- ✅ Required files are present
+- ✅ Environment variables are configured
+- ✅ Application modules can load successfully
 
 ### **Option 1: One-Click Deployment (Recommended)**
 
@@ -229,10 +251,13 @@ docker-compose up -d
 
 ### **Testing**
 ```bash
-# Run tests
+# Verify setup and configuration
+npm run verify
+
+# Run tests (includes verification)
 npm test
 
-# Run with coverage
+# Run with coverage (if tests exist)
 npm run test:coverage
 ```
 
