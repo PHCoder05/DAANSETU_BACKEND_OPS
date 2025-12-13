@@ -2,6 +2,7 @@ const { getDB } = require('../config/db');
 const User = require('../models/User');
 const PasswordReset = require('../models/PasswordReset');
 const { hashPassword, generateRandomString, successResponse, errorResponse } = require('../utils/helpers');
+const { sendEmail } = require('../utils/emailService');
 const crypto = require('crypto');
 
 // Request password reset
@@ -12,7 +13,7 @@ const requestPasswordReset = async (req, res) => {
 
     // Find user
     const user = await User.findByEmail(db, email);
-    
+
     // Don't reveal if user exists or not (security)
     if (!user) {
       return successResponse(res, 200, 'If the email exists, a password reset link will be sent');
@@ -32,17 +33,23 @@ const requestPasswordReset = async (req, res) => {
       expiresAt
     });
 
-    // In production, send email with reset link
-    // const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    // await sendEmail(user.email, 'Password Reset', resetUrl);
+    // Send email using Ethereal (No credentials needed)
+    const resetUrl = `https://daansetu-web.vercel.app/reset-password?token=${resetToken}`;
 
-    // For development, return token (remove in production!)
-    if (process.env.NODE_ENV === 'development') {
-      return successResponse(res, 200, 'Password reset token generated', {
-        resetToken, // Only in development!
-        message: 'In production, this will be sent via email'
-      });
-    }
+    // Send the email
+    console.log(`Attempting to send reset email to ${email}...`);
+    const previewUrl = await sendEmail(email, 'Password Reset Request', `
+      <h3>Password Reset Request</h3>
+      <p>Click the link below to reset your password:</p>
+      <a href="${resetUrl}">Reset Password</a>
+      <p>This link expires in 1 hour.</p>
+    `);
+
+    // Return the preview URL in the response for development convenience
+    return successResponse(res, 200, 'Password reset email sent (Check Preview URL)', {
+      previewUrl,
+      message: 'Click the previewUrl to see the email inbox!'
+    });
 
     return successResponse(res, 200, 'If the email exists, a password reset link will be sent');
   } catch (error) {
@@ -55,7 +62,7 @@ const requestPasswordReset = async (req, res) => {
 const resetPassword = async (req, res) => {
   try {
     const { token, newPassword } = req.body;
-    
+
     if (!token || !newPassword) {
       return errorResponse(res, 400, 'Token and new password are required');
     }
@@ -67,7 +74,7 @@ const resetPassword = async (req, res) => {
 
     // Find valid reset token
     const resetRecord = await PasswordReset.findByToken(db, hashedToken);
-    
+
     if (!resetRecord) {
       return errorResponse(res, 400, 'Invalid or expired reset token');
     }
@@ -94,7 +101,7 @@ const resetPassword = async (req, res) => {
 const verifyResetToken = async (req, res) => {
   try {
     const { token } = req.query;
-    
+
     if (!token) {
       return errorResponse(res, 400, 'Token is required');
     }
@@ -103,7 +110,7 @@ const verifyResetToken = async (req, res) => {
     const db = getDB();
 
     const resetRecord = await PasswordReset.findByToken(db, hashedToken);
-    
+
     if (!resetRecord) {
       return errorResponse(res, 400, 'Invalid or expired reset token');
     }

@@ -2,8 +2,12 @@ const jwt = require('jsonwebtoken');
 const { getDB } = require('../config/db');
 const User = require('../models/User');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this-in-production';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key-change-this';
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+
+if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+  throw new Error('FATAL: JWT_SECRET and JWT_REFRESH_SECRET must be defined in environment variables.');
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m'; // Short-lived access token
 const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d'; // Long-lived refresh token
 
@@ -43,7 +47,7 @@ const authenticate = async (req, res, next) => {
   try {
     // Get token from header
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({
         success: false,
@@ -56,7 +60,7 @@ const authenticate = async (req, res, next) => {
     try {
       // Verify token
       const decoded = jwt.verify(token, JWT_SECRET);
-      
+
       // Get user from database
       const db = getDB();
       const user = await User.findById(db, decoded.userId);
@@ -92,7 +96,7 @@ const authenticate = async (req, res, next) => {
           message: 'Token has expired.'
         });
       }
-      
+
       return res.status(401).json({
         success: false,
         message: 'Invalid token.'
@@ -162,7 +166,7 @@ const verifyNGO = async (req, res, next) => {
 const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return next();
     }

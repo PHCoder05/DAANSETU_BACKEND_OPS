@@ -51,6 +51,24 @@ const getDonations = async (req, res) => {
     // Build filter
     const filter = buildDonationFilter(req.query, req.user?.userId, req.user?.role);
 
+    // Handle 'saved' filter
+    if (req.query.saved === 'true' && req.user?.userId) {
+      const user = await User.findById(db, req.user.userId);
+      if (user && user.bookmarks && user.bookmarks.length > 0) {
+        const bookmarkIds = user.bookmarks
+          .filter(id => ObjectId.isValid(id))
+          .map(id => new ObjectId(id));
+
+        if (bookmarkIds.length > 0) {
+          filter._id = { $in: bookmarkIds };
+        } else {
+          return successResponse(res, 200, 'No saved donations found', buildPaginationResponse([], 0, page, limitNum));
+        }
+      } else {
+        return successResponse(res, 200, 'No saved donations found', buildPaginationResponse([], 0, page, limitNum));
+      }
+    }
+
     // Get donations with donor details
     const donations = await Donation.findWithDonorDetails(db, filter, {
       skip,
@@ -293,13 +311,54 @@ const updateDonationStatus = async (req, res) => {
         priority: 'high'
       });
 
-      // Update donor stats
+      // Update donor stats and impact score
       await User.update(db, donation.donorId.toString(), {
         $inc: {
           'donorStats.activeDonations': -1,
-          'donorStats.completedDonations': 1
+          'donorStats.completedDonations': 1,
+          'impactScore': 10
         }
       });
+
+      // BADGE LOGIC 🏆
+      try {
+        const donor = await User.findById(db, donation.donorId.toString());
+        const completed = donor.donorStats.completedDonations;
+        let newBadge = null;
+
+        if (completed === 1) {
+          newBadge = { id: 'first_step', name: 'First Step', icon: '🌟', description: 'Made your first donation!', awardedAt: new Date() };
+        } else if (completed === 5) {
+          newBadge = { id: 'helping_hand', name: 'Helping Hand', icon: '🤝', description: 'Completed 5 donations', awardedAt: new Date() };
+        } else if (completed === 10) {
+          newBadge = { id: 'community_hero', name: 'Community Hero', icon: '🦸‍♂️', description: 'Completed 10 donations', awardedAt: new Date() };
+        } else if (completed === 25) {
+          newBadge = { id: 'legend', name: 'Legend', icon: '🏆', description: 'Completed 25 donations', awardedAt: new Date() };
+        }
+
+        if (newBadge) {
+          // Check if badge already exists (just in case)
+          const hasBadge = donor.badges && donor.badges.some(b => b.id === newBadge.id);
+          if (!hasBadge) {
+            await db.collection('users').updateOne(
+              { _id: new ObjectId(donation.donorId.toString()) },
+              { $push: { badges: newBadge } }
+            );
+
+            // Notify user about new badge
+            await Notification.create(db, {
+              userId: donation.donorId,
+              title: 'New Badge Unlocked! 🏆',
+              message: `Congratulations! You've earned the "${newBadge.name}" badge.`,
+              type: 'system',
+              priority: 'high'
+            });
+          }
+        }
+      } catch (badgeError) {
+        console.error('Error awarding badge:', badgeError);
+        // Don't fail the request if badge logic fails
+      }
     }
 
     const updatedDonation = await Donation.findById(db, id);

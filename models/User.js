@@ -14,7 +14,8 @@ class User {
     this.active = data.active !== undefined ? data.active : true;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
-    
+    this.bookmarks = data.bookmarks || []; // Array of Donation IDs
+
     // NGO-specific fields
     if (this.role === 'ngo') {
       this.ngoDetails = {
@@ -27,7 +28,7 @@ class User {
         establishedYear: data.ngoDetails?.establishedYear || null
       };
     }
-    
+
     // Donor-specific fields
     if (this.role === 'donor') {
       this.donorStats = {
@@ -35,6 +36,10 @@ class User {
         activeDonations: data.donorStats?.activeDonations || 0,
         completedDonations: data.donorStats?.completedDonations || 0
       };
+
+      // Gamification fields
+      this.impactScore = data.impactScore || 0;
+      this.badges = data.badges || []; // Array of { id, name, icon, awardedAt }
     }
   }
 
@@ -42,8 +47,8 @@ class User {
 
   static async findById(db, id) {
     try {
-      return await db.collection(this.collectionName).findOne({ 
-        _id: new ObjectId(id) 
+      return await db.collection(this.collectionName).findOne({
+        _id: new ObjectId(id)
       });
     } catch (error) {
       return null;
@@ -51,8 +56,8 @@ class User {
   }
 
   static async findByEmail(db, email) {
-    return await db.collection(this.collectionName).findOne({ 
-      email: email.toLowerCase() 
+    return await db.collection(this.collectionName).findOne({
+      email: email.toLowerCase()
     });
   }
 
@@ -87,8 +92,8 @@ class User {
   }
 
   static async delete(db, id) {
-    const result = await db.collection(this.collectionName).deleteOne({ 
-      _id: new ObjectId(id) 
+    const result = await db.collection(this.collectionName).deleteOne({
+      _id: new ObjectId(id)
     });
     return result.deletedCount > 0;
   }
