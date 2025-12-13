@@ -4,11 +4,14 @@ FROM node:18-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install pnpm
+RUN npm install -g pnpm
 
-# Install dependencies
-RUN npm ci --only=production
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies using pnpm
+RUN pnpm install --frozen-lockfile --prod
 
 # Production stage
 FROM node:18-alpine
@@ -35,14 +38,9 @@ RUN mkdir -p logs && chown nodejs:nodejs logs
 # Switch to non-root user
 USER nodejs
 
-# Expose port
+# Expose port (documentary only, Render overrides this)
 EXPOSE 5000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start application with dumb-init
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "app.js"]
-
