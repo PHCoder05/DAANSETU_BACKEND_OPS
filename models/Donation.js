@@ -11,22 +11,22 @@ class Donation {
     this.images = data.images || [];
     this.condition = data.condition || 'good'; // 'new', 'good', 'fair', 'used'
     this.expiryDate = data.expiryDate || null; // for food items
-    
+
     // Location
     this.pickupLocation = data.pickupLocation; // { lat, lng, address }
     this.pickupInstructions = data.pickupInstructions || null;
-    
+
     // Status
     this.status = data.status || 'available'; // 'available', 'claimed', 'in-transit', 'delivered', 'cancelled'
     this.claimedBy = data.claimedBy ? new ObjectId(data.claimedBy) : null; // NGO ID
     this.claimedAt = data.claimedAt || null;
-    
+
     // Delivery tracking
     this.deliveryStatus = data.deliveryStatus || null;
     this.deliveryDate = data.deliveryDate || null;
     this.deliveryNotes = data.deliveryNotes || null;
     this.deliveryImages = data.deliveryImages || [];
-    
+
     // Metadata
     this.priority = data.priority || 'normal'; // 'low', 'normal', 'high', 'urgent'
     this.tags = data.tags || [];
@@ -40,8 +40,8 @@ class Donation {
 
   static async findById(db, id) {
     try {
-      return await db.collection(this.collectionName).findOne({ 
-        _id: new ObjectId(id) 
+      return await db.collection(this.collectionName).findOne({
+        _id: new ObjectId(id)
       });
     } catch (error) {
       return null;
@@ -141,7 +141,7 @@ class Donation {
       updatedAt: new Date(),
       ...additionalData
     };
-    
+
     const result = await db.collection(this.collectionName).updateOne(
       { _id: new ObjectId(donationId) },
       { $set: updateData }
@@ -150,8 +150,8 @@ class Donation {
   }
 
   static async delete(db, id) {
-    const result = await db.collection(this.collectionName).deleteOne({ 
-      _id: new ObjectId(id) 
+    const result = await db.collection(this.collectionName).deleteOne({
+      _id: new ObjectId(id)
     });
     return result.deletedCount > 0;
   }
@@ -160,7 +160,7 @@ class Donation {
   static async findNearby(db, lat, lng, maxDistance = 50000, options = {}) {
     // maxDistance in meters (default 50km)
     const { skip = 0, limit = 10 } = options;
-    
+
     return await db.collection(this.collectionName)
       .find({
         status: 'available',

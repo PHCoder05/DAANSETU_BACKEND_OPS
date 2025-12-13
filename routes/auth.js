@@ -2,13 +2,47 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const { authenticate } = require('../middleware/auth');
-const { 
-  registerValidation, 
-  loginValidation, 
-  updateNGODetailsValidation 
+const {
+  registerValidation,
+  loginValidation,
+  updateNGODetailsValidation
 } = require('../utils/validators');
 const { body } = require('express-validator');
 const { validate } = require('../utils/validators');
+
+/**
+ * @swagger
+ * /api/auth/check-email:
+ *   get:
+ *     summary: Check if email exists (for unified auth flow)
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: email
+ *         description: Email address to check
+ *     responses:
+ *       200:
+ *         description: Email check completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     exists:
+ *                       type: boolean
+ *       400:
+ *         description: Email is required
+ */
+router.get('/check-email', authController.checkEmail);
 
 /**
  * @swagger
@@ -176,6 +210,30 @@ router.get('/profile', authenticate, authController.getProfile);
  *         description: Profile updated successfully
  */
 router.put('/profile', authenticate, authController.updateProfile);
+
+/**
+ * @swagger
+ * /api/auth/profile/image:
+ *   post:
+ *     summary: Upload profile image
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Image uploaded successfully
+ */
+const upload = require('../middleware/upload');
+router.post('/profile/image', authenticate, upload.single('image'), authController.uploadProfileImage);
 
 /**
  * @swagger
@@ -356,6 +414,42 @@ router.post(
   ],
   authController.generateUserToken
 );
+
+/**
+ * @swagger
+ * /api/auth/leaderboard:
+ *   get:
+ *     summary: Get donor leaderboard
+ *     tags: [Authentication]
+ *     responses:
+ *       200:
+ *         description: Leaderboard retrieved successfully
+ */
+router.get('/leaderboard', authController.getLeaderboard);
+
+/**
+ * @swagger
+ * /api/auth/bookmark:
+ *   post:
+ *     summary: Toggle bookmark for a donation
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [donationId]
+ *             properties:
+ *               donationId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Bookmark toggled successfully
+ */
+router.post('/bookmark', authenticate, authController.toggleBookmark);
 
 module.exports = router;
 

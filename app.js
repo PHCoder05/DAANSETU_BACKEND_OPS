@@ -17,6 +17,7 @@ const searchRoutes = require('./routes/search');
 const dashboardRoutes = require('./routes/dashboard');
 const passwordResetRoutes = require('./routes/password-reset');
 const reviewRoutes = require('./routes/reviews');
+const chatRoutes = require('./routes/chat');
 
 // Create Express app
 const app = express();
@@ -32,6 +33,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Request logging middleware with Winston
 app.use(requestLogger);
+
+// Serve static files
+app.use('/uploads', express.static('public/uploads'));
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -63,12 +67,14 @@ app.use('/api/setup', setupRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/password-reset', passwordResetRoutes);
 app.use('/api/donations', donationRoutes);
-app.use('/api/ngos', ngoRoutes);
-app.use('/api/notifications', notificationRoutes);
+app.use('/api/ngos', ngoRoutes);  // Added missing NGO routes
 app.use('/api/reviews', reviewRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+
 
 // 404 handler
 app.use((req, res) => {
@@ -93,13 +99,17 @@ app.use((err, req, res, next) => {
       ip: req.ip
     }
   });
-  
+
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal server error',
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
+
+const http = require('http');
+const socketIo = require('socket.io');
+const chatSocket = require('./sockets/chatSocket');
 
 // Start server
 const PORT = process.env.PORT || 5000;
@@ -108,15 +118,30 @@ const startServer = async () => {
   try {
     // Connect to MongoDB
     await connectDB();
-    
-    // Start Express server
-    app.listen(PORT, () => {
+
+    // Create HTTP server
+    const server = http.createServer(app);
+
+    // Initialize Socket.io
+    const io = socketIo(server, {
+      cors: {
+        origin: process.env.CORS_ORIGIN || '*',
+        methods: ["GET", "POST"],
+        credentials: true
+      }
+    });
+
+    // Setup Chat Sockets
+    chatSocket(io);
+
+    // Start Server
+    server.listen(PORT, () => {
       logger.info('🚀 DAANSETU API Server Started');
       logger.info(`📡 Port: ${PORT}`);
       logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
       logger.info(`📄 Swagger Docs: http://localhost:${PORT}/api-docs`);
       logger.info('✨ Ready to accept requests!');
-      
+
       // Console output for visibility
       console.log(`\n🚀 DAANSETU API Server is running!`);
       console.log(`📡 Port: ${PORT}`);
